@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>STT 결과 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/resultdetail.css"> 
+</head>
+<body>
+    <div class="stt-detail">
+        <h1 th:text="${result.fileName}"></h1>
+        <p th:text="${result.resultText}"></p>
+        <div class="stt-info">
+            <span class="stt-date" th:text="${#temporals.format(result.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+            <span class="stt-duration" th:text="${#numbers.formatDecimal(result.fileDurationSeconds, 1, 1)} + ' 초'"></span>
+        </div>
+        
+        <button class="detail-button" onclick="toggleDetails()">상세 정보</button>
+        
+        <div id="detailsSection" class="hidden">
+            <table class="details-table">
+                <tr>
+                    <th>파일명</th>
+                    <th>파일 길이</th>
+                    <th>파일 크기</th>
+                    <th>확장자</th>
+                    <th>총 처리 시간</th>
+                </tr>
+                <tr>
+                    <td th:text="${result.fileName}"></td>
+                    <td th:text="${#numbers.formatDecimal(result.fileDurationSeconds, 1, 1)} + ' 초'"></td>
+                    <td th:text="${result.formattedFileSize}"></td>
+                    <td th:text="${result.fileExtension}"></td>
+                    <td th:text="${#numbers.formatDecimal(result.totalProcessingTimeSeconds, 1, 1)} + ' 초'"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails() {
+            var detailsSection = document.getElementById('detailsSection');
+            if (detailsSection.classList.contains('hidden')) {
+                detailsSection.classList.remove('hidden');
+            } else {
+                detailsSection.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}" layout:fragment="content">
+
+<head>
+    <meta charset="UTF-8">
+    <title>음성 to 텍스트 변환</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+	
+	
+	</div>
+    <h1>음성 파일을 텍스트로 변환(VITO)</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="audio/*">
+        <button type="submit">변환하기</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#uploadForm').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/api/tutorial/transcribe/file',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#result').text('변환된 텍스트: ' + response.text);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#result').text('에러 발생: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

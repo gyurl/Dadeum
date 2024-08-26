@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}" layout:fragment="content"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>회원가입</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+var isIdDuplicate = false;  /* // 아이디 중복 확인 상태 변수 */
+var isIdChecked = false;    // 아이디 중복 확인 버튼 클릭 상태 변수
+
+function validateId() {
+    const idInput = document.getElementById('id');
+    const idMessage = document.getElementById('id-message');
+    const id = idInput.value;
+    
+    const idRegex = /^[a-zA-Z0-9]{5,12}$/; // 5~12자 영문 대소문자, 숫자만 허용
+    if (!idRegex.test(id)) {
+        idMessage.innerText = "ID는 5~12자 사이의 영문자 또는 숫자로만 입력해주세요.";
+        idMessage.style.color = "red";
+        return false;
+    } else {
+    	idMessage.innerText ="";
+    	return true;
+    }
+  }
+
+  function checkIdDuplicate() {
+	 const id = document.getElementById('id').value;
+	    const idMessage = document.getElementById('id-message');
+
+	    if (!validateId()) {
+	        return;
+	    }
+
+	    $.ajax({
+	        url: '/members/checkId',
+	        method: 'POST',
+	        data: { id: id },
+	        success: function(response) {
+	            isIdChecked = true;
+	            console.log("Server response:", response); // 디버깅을 위해 추가
+	            if (response === 'available') {
+	                isIdDuplicate = false;
+	                idMessage.innerText = "사용 가능한 ID입니다.";
+	                idMessage.style.color = "blue";
+	            } else {
+	                isIdDuplicate = true;
+	                idMessage.innerText = "이미 사용 중인 ID입니다.";
+	                idMessage.style.color = "red";
+	            }
+	        },
+	        error: function(xhr, status, error) {
+	            isIdChecked = false;
+	            console.error("Ajax error:", status, error); // 디버깅을 위해 추가
+	            idMessage.innerText = "ID 중복 확인 중 오류가 발생했습니다.";
+	            idMessage.style.color = "red";
+	        }
+	    });
+	}
+	
+	  
+function validateEmail() {
+    const emailUser = document.getElementById('emailUser').value;
+    const emailDomain = document.getElementById('emailDomain').value;
+    const fullEmailInput = document.getElementById('fullEmail');
+    const emailMessage = document.getElementById('email-message');
+
+    // 전체 이메일 형식을 체크
+    const fullEmail = emailUser + '@' + emailDomain;
+    fullEmailInput.value = fullEmail;
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (emailRegex.test(fullEmail)) {
+        emailMessage.innerText = "유효한 이메일입니다.";
+        emailMessage.style.color = "blue";
+        return true;
+    } else {
+        emailMessage.innerText = "올바른 형식의 이메일을 입력해주세요.";
+        emailMessage.style.color = "red";
+        return false; // 유효성 검사 실패
+    }
+}
+
+
+function validatePassword() {
+    const passwordInput = document.getElementById('password');
+    const passwordMessage = document.getElementById('password-message');
+    const password = passwordInput.value;
+    
+    const minLength = 4;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasNumber = /\d/.test(password);
+    
+    let isValid = true;
+    let message = "";
+
+    if (password.length < minLength) {
+        isValid = false;
+        message += "비밀번호는 최소 4자 이상이어야 합니다. ";
+    }
+
+    if (!hasSpecialChar) {
+        isValid = false;
+        message += "특수문자를 포함해야 합니다. ";
+    }
+
+    if (isValid) {
+        passwordMessage.innerText = "유효한 비밀번호입니다.";
+        passwordMessage.style.color = "blue";
+    } else {
+        passwordMessage.innerText = message.trim();
+        passwordMessage.style.color = "red";
+    }
+  	  checkPasswordMatch();
+     	return isValid;
+  
+}
+
+function checkPasswordMatch() {
+    const passwordInput = document.getElementById('password');
+    const password2Input = document.getElementById('password2');
+    const passwordMatchMessage = document.getElementById('password-match-message');
+
+ // 비밀번호가 비어있는 경우 메시지를 표시하지 않음
+    if (!passwordInput.value) {
+        passwordMatchMessage.innerText = "";
+        return;
+    }
+
+    // 비밀번호 확인란이 비어있는 경우
+    if (!password2Input.value) {
+        passwordMatchMessage.innerText = "";
+        return;
+    }
+    
+    if (passwordInput.value === password2Input.value) {
+        passwordMatchMessage.innerText = "비밀번호가 일치합니다.";
+        passwordMatchMessage.style.color = "blue";
+    } else {
+        passwordMatchMessage.innerText = "비밀번호가 일치하지 않습니다.";
+        passwordMatchMessage.style.color = "red";
+    }
+}
+
+function validatePhone() {
+    const phoneInput = document.getElementById('phonenumber');
+    const phoneMessage = document.getElementById('phone-message');
+    
+    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '');
+    
+    const phoneRegex = /^\d{11}$/; // 'xxx xxxx xxxx' 형식 (11자리 숫자)
+    
+    if (phoneRegex.test(phoneInput.value)) {
+        phoneMessage.innerText = "유효한 전화번호입니다.";
+        phoneMessage.style.color = "blue";
+        return true;
+    } else {
+        phoneMessage.innerText = "전화번호는 11자리 숫자로 입력해주세요";
+        phoneMessage.style.color = "red";
+        return false;
+    }
+}
+
+function setFullEmail() {
+    // 이메일 유효성 검사 시 setFullEmail() 함수는 이메일을 설정합니다.
+    validateEmail();
+}
+
+function validateForm() {
+	const name = document.getElementById('name').value.trim();
+    const id = document.getElementById('id').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const password2 = document.getElementById('password2').value.trim();
+    const emailUser = document.getElementById('emailUser').value.trim();
+    const phonenumber = document.getElementById('phonenumber').value.trim();
+    let errorMessage = ""; // 오류 메시지를 저장할 변수
+
+    if (!name) {
+        errorMessage += "이름을 입력하세요.\n";
+    }
+    if (!id) {
+        errorMessage += "ID를 입력하세요.\n";
+    } else if (!validateId()) {
+        errorMessage += "ID 형식이 맞지 않습니다.\n";
+     }
+    /* 중복확인 버튼 적용되면 -> */
+    /* lse if (!isIdChecked) {
+        errorMessage += "ID 중복 확인을 해주세요.\n";
+    } else if (isIdDuplicate) {
+        errorMessage += "이미 사용 중인 ID입니다.\n";
+    } */
+    if (!password) {
+        errorMessage += "비밀번호를 입력하세요.\n";
+    } else if (!validatePassword()) {
+        errorMessage += "비밀번호 형식이 맞지 않습니다.\n";
+    }
+    if (!password2) {
+        errorMessage += "비밀번호 확인을 입력하세요.\n";
+    } else if (password !== password2) {
+        errorMessage += "비밀번호가 일치하지 않습니다.\n";
+    }
+    if (!emailUser) {
+        errorMessage += "이메일을 입력하세요.\n";
+    } else if (!validateEmail()) {
+        errorMessage += "이메일 형식이 맞지 않습니다.\n";
+    }
+    if (!phonenumber) {
+        errorMessage += "전화번호를 입력하세요.\n";
+    } else if (!validatePhone()) {
+        errorMessage += "전화번호 형식이 맞지 않습니다.\n";
+    }
+	if (!isIdChecked) {
+	    errorMessage += "ID 중복 확인을 해주세요.\n";
+	} else if (isIdDuplicate) {
+	    errorMessage += "이미 사용 중인 ID입니다.\n";
+	}
+
+
+ // 오류 메시지가 있을 경우 경고창 표시
+    if (errorMessage) {
+        alert(errorMessage.trim());
+        return false; // 유효성 검사 실패 시 false 반환
+    }
+    // 모든 유효성 검사가 통과했으면 true를 반환
+    return true; 
+}
+</script>
+</head>
+
+<body>
+	<div class="Sign_form_container">
+		<h2>회원가입</h2>
+
+		<div class="contain-1">
+			<div class="content-panel3 pn">
+				<form th:action="@{/members/signup}" th:object="${memberForm}"
+					method="post" name="f" onsubmit="return validateForm()">
+					<div class="mb-container">
+						<label for="name">이름</label> <input type="text"
+							class="form-control1" id="name" th:field="*{name}" required>
+
+					</div>
+					<div class="mb-container">
+					
+							<div class="idcheck-container">
+							    <label for="id" style="margin:auto; margin-right: 5px;">ID</label>
+							    <input type="text" class="form-control1" id="id" th:field="*{id}" onkeyup="validateId()" required>
+							    <button type="button" class="checkButton" onclick="checkIdDuplicate()">중복 확인</button>
+							    <div id="id-message"></div>
+							</div>
+						<div id="id-message"></div>
+					</div>
+					<div class="mb-container">
+						<label for="password">비밀번호</label> <input type="password"
+							class="form-control1" id="password" th:field="*{password}"
+							onkeyup="validatePassword()" required>
+						<div id="password-message"></div>
+
+					</div>
+
+					<div class="mb-container">
+						<label for="password">비밀번호 확인</label> <input type="password"
+							class="form-control1" th:field="*{password2}"
+							onkeyup="checkPasswordMatch()" required>
+						<div id="password-match-message"></div>
+
+					</div>
+
+
+					<div class="mb-container">
+						<label for="email" class="email_label">이메일</label> <input
+							type="text" id="emailUser" onkeyup="validateEmail()" class="email"
+							placeholder="아이디 부분" required>@ <select id="emailDomain"
+							onchange="validateEmail()" required>
+							<option value="naver.com">naver.com</option>
+							<option value="gmail.com">gmail.com</option>
+							<option value="daum.net">daum.net</option>
+							<option value="nate.com">nate.com</option>
+						</select>
+					</div>
+					<input type="hidden" th:field="*{email}" id="fullEmail">
+					<div id="email-message" class="email-message"></div>
+
+					<div class="mb-container">
+						<label for="phoneNumber">전화번호</label> <input type="tel"
+							class="form-control1" id="phonenumber" th:field="*{phoneNumber}"
+							oninput="validatePhone()" maxlength="11" required>
+						<div id="phone-message"></div>
+					</div>
+					<br>
+					<button type="submit" class="btn1 btn1-primary"
+						onclick="return validateForm()">회원 가입</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>

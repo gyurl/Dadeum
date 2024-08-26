@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Upload Audio File</title>
+</head>
+<body>
+    <h1>Upload Audio File for Speech to Text</h1>
+    <form method="post" enctype="multipart/form-data" th:action="@{/api/transcribe}">
+        <input type="file" name="file" accept=".mp3,.m4a,.mp4" required />
+        <button type="submit">Upload</button>
+    </form>
+    <div th:if="${error}">
+        <p th:text="${error}" style="color: red;"></p>
+    </div>
+</body>
+</html>

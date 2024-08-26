@@ -1,0 +1,44 @@
+
+
+<html layout:decorate="~{layout}" layout:fragment="content">
+	
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+	
+</head>
+<body>
+
+    <div class="logincon">
+        <h2>로그인</h2>
+		<div class="contain-2">
+					<div class="content-panel2 pn">
+        <form th:action="@{/members/login-api}" action="login" method="post">
+			           <div class="mb-container">
+			            <p>
+			                
+			                <input type="text" class="form-control1" name="id" id="id" placeholder="ID" style="width: 200px;">
+			            </p>
+			            <p>
+			               
+			                <input type="password" class="form-control1" name="password" id="password" placeholder="비밀번호" style="width: 200px;">
+			            </p>
+			            <input class="loginLoginValue" type="hidden" name="service" value="login" />
+			        </div>
+			        <p class="p-container">
+			           
+			            <button id="btn_login" type="submit" class="btn2 btn2-primary">로그인</button>
+			        </p>
+			        </form>
+			        </div>
+			        </div>
+			        </div>
+			</body>
+			    <script>
+					document.getElementById("btn_login").addEventListener('click', function(event) {
+			    		event.preventDefault();  // 버튼의 기본 동작을 막음
+			    		login();  // 로그인 함수 호출
+					});
+					
+				</script>
+			</html>

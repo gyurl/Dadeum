@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>음성 to 텍스트 변환</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div sec:authorize="isAuthenticated()">
+        <h1>음성 파일을 텍스트로 변환(VITO)</h1>
+        <form id="uploadForm" th:action="@{/vito/transcribe/file}" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="audio/*">
+            <button type="submit">변환하기</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <div sec:authorize="!isAuthenticated()">
+        <p>STT 기능을 사용하려면 <a th:href="@{/members/login}">로그인</a>이 필요합니다.</p>
+    </div>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    var apiKey = /*[[${apiKey}]]*/ '';
+    /*]]>*/
+	
+	/*<![CDATA[*/
+	   window.onload = function() {
+	       var redirectUrl = /*[[${param.redirect}]]*/ null;
+	       if (redirectUrl && redirectUrl.includes('/vito/trans')) {
+	           alert("음성 텍스트 변환 기능을 사용하려면 로그인이 필요합니다.");
+	       }
+	   }
+	   /*]]>*/
+
+    $(document).ready(function() {
+        $('#uploadForm').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: /*[[@{/vito/transcribe/file}]]*/ '/vito/transcribe/file',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function(xhr) {
+                    if (apiKey) {
+                        xhr.setRequestHeader('X-API-KEY', apiKey);
+                    }
+                },
+                success: function(response) {
+                    $('#result').html('<p style="color: green;">변환된 텍스트: ' + response.text + '</p>');
+                },
+                error: function(xhr, status, error) {
+	                var errorMessage;
+	                try {
+	                    var errorResponse = JSON.parse(xhr.responseText);
+	                    errorMessage = errorResponse.message || errorResponse.error || '알 수 없는 오류가 발생했습니다.';
+	                } catch (e) {
+	                    errorMessage = xhr.status + ': ' + xhr.statusText;
+	                }
+
+	                var errorDetails = '';
+	                if (xhr.status === 401) {
+	                    errorDetails = '인증 오류: API 키가 유효하지 않거나 제공되지 않았습니다.';
+	                } else if (xhr.status === 400) {
+	                    errorDetails = '잘못된 요청: 파일 형식이 올바르지 않거나 필수 파라미터가 누락되었습니다.';
+	                } else if (xhr.status === 500) {
+	                    errorDetails = '서버 내부 오류: 관리자에게 문의해주세요.';
+	                }
+
+	                $('#result').html(
+	                    '<p style="color: red;">에러 발생:</p>' +
+	                    '<p>' + errorMessage + '</p>' +
+	                    (errorDetails ? '<p>' + errorDetails + '</p>' : '')
+	                );
+	            }
+	        });
+	    });
+	});
+	</script>
+</body>
+</html>
